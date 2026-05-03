@@ -1,0 +1,97 @@
+[package]
+name = "{{ project-name }}"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[package.metadata.bevy_cli.release]
+# disable dev features for release builds
+default-features = false
+
+[package.metadata.bevy_cli.web]
+# disable native features for web builds
+default-features = false
+
+[package.metadata.bevy_cli.web.dev]
+features = ["dev"]
+
+[package.metadata.bevy_lint]
+panicking_methods = "deny"
+pedantic = "warn"
+
+[dependencies]
+{% case features -%}
+  {%- when "3D" -%}
+    bevy = { version = "0.18.1", default-features = false, features = ["3d"] }
+  {%- when "2D" -%}
+    bevy = { version = "0.18.1", default-features = false, features = ["2d"] }
+  {%- when "Default" -%}
+    bevy = "0.18.1"
+  {%- when "None" -%}
+    bevy = { version = "0.18.1", default-features = false, features = []}
+{%- endcase %}
+rand = "0.9"
+# compile out low-severity logs to improve performance
+tracing = { version = "0.1", features = [
+  "max_level_debug",
+  "release_max_level_warn",
+] }
+
+# required for wasm to work
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+
+[features]
+# default to a native dev build
+default = ["dev_native"]
+dev = [
+  "bevy/bevy_dev_tools",
+  "bevy/bevy_ui_debug",
+  "bevy/debug",
+  # improve compile times for dev builds by linking bevy as a dynamic library
+  "bevy/dynamic_linking",
+  # improve error messages coming from Bevy
+  "bevy/track_location",
+]
+dev_native = [
+  # enable embedded asset hot reloading for native dev builds
+  "bevy/embedded_watcher",
+  # enable asset hot reloading for native dev builds
+  "bevy/file_watcher",
+  "dev",
+]
+
+[lints.clippy]
+# make sure macros use their standard braces, such as `[]` for `bevy_ecs::children!`
+nonstandard_macro_braces = "warn"
+# bevy supplies arguments to systems via dependency injection, so it's natural for systems to
+# request more than 7 arguments, which would undesirably trigger this lint
+too_many_arguments = "allow"
+# queries may access many components, which would undesirably trigger this lint
+type_complexity = "allow"
+
+[lints.rust]
+# mark `bevy_lint` as a valid `cfg`, as it is set when the bevy linter runs
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(bevy_lint)"] }
+
+# enable a small amount of optimization in the dev profile
+[profile.dev]
+opt-level = 1
+
+# enable a large amount of optimization in the dev profile for dependencies
+[profile.dev.package."*"]
+opt-level = 3
+
+# remove expensive debug assertions due to <https://github.com/bevyengine/bevy/issues/14291>
+[profile.dev.package.wgpu-types]
+debug-assertions = false
+
+# this profile will be used by `bevy run web` automatically
+[profile.web-release]
+# default to release profile values
+inherits = "release"
+# optimize with size in mind (also try "z", sometimes it is better)
+# slightly slows compile times, great improvements to file size and runtime performance
+opt-level = "s"
+# strip all debugging information from the binary to slightly reduce file size
+strip = "debuginfo"

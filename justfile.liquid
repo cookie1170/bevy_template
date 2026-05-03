@@ -1,0 +1,100 @@
+itch-page := '{{ itch }}'
+
+{% raw -%}
+web-target := 'web'
+win-target := 'x86_64-pc-windows-gnu'
+linux-target := 'x86_64-unknown-linux-gnu'
+
+win-channel := 'windows'
+linux-channel := 'linux'
+web-channel := 'web'
+
+bevy := require('bevy')
+butler := require('butler')
+
+bin-name := shell("cargo metadata --format-version 1 --no-deps | jq -r '[.packages[0].targets[] | select(.kind[]) | select (.kind[] | select(. == \"bin\")) | .name][0]'")
+target-dir := shell("cargo metadata --format-version 1 --no-deps | jq -r '.target_directory'")
+crate-version := shell("cargo metadata --format-version 1 --no-deps | jq -r '.packages[0].version'")
+
+# Publish a new release version to itch.io
+[arg('version', pattern='^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$')]
+[confirm('Are you sure you want to publish a new release?')]
+release version=crate-version build-args='' validate='true':
+    @if {{ validate }}; then \
+        just validate-all; \
+    fi
+
+    just build-all '{{ build-args }}'
+    just --yes publish-all {{ version }} false
+
+# Publish a new release to itch.io with the `playtest` feature
+[arg('version', pattern='^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$')]
+[confirm('Are you sure you want to publish a new playtest build?')]
+playtest version=crate-version build-args='' validate='true':
+    @if {{ validate }}; then \
+        just validate-all; \
+    fi
+
+    just --yes release {{ version }} '-F playtest {{ build-args }}' false
+
+# Publish all builds for the project currently in the target folder (which may be outdated!)
+[arg('version', pattern='^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$')]
+[confirm('Are you sure you want to publish all the (possibly outdated) builds?')]
+publish-all version=crate-version validate='true':
+    @if {{ validate }}; then \
+        just validate-all; \
+    fi
+
+    just --yes publish {{ web-target }} {{ web-channel }} {{ version }} false
+    just --yes publish {{ win-target }} {{ win-channel }} {{ version }} false
+    just --yes publish {{ linux-target }} {{ linux-channel }} {{ version }} false
+
+
+# Publish the specified build to the channel
+[arg('version', pattern='^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$')]
+[confirm('Are you sure you want to publish a build?')]
+publish target channel version=crate-version validate='true':
+    @if {{ validate }}; then \
+        just validate-all; \
+    fi
+
+    {{ butler }} push target/out/{{ target }} {{ itch-page }}:{{ channel }} --userversion {{ version }}
+
+# Build the linux, windows, and web targets, optionally with extra build args passed in
+build-all build-args='':
+    just build {{ linux-target }} '{{ build-args }}'
+    just build {{ win-target }} '{{ build-args }}' .exe
+    just build-web '{{ build-args }}'
+
+# Build the specified target triple with extra build arguments and file extension
+build target build-args='' ext='':
+    mkdir -p target/out/{{ target }}
+    {{ bevy }} build {{ build-args }} --release --target {{ target }}
+    cp {{ target-dir }}/{{ target }}/release/{{ bin-name }}{{ ext }} target/out/{{ target }}
+    cp -r assets target/out/{{ target }}
+
+# Builds and bundles a web build
+build-web build-args='' web-args='':
+    mkdir -p target/out/{{ web-target }}
+    {{ bevy }} build {{ build-args }} --release web --bundle {{ web-args }}
+    cp -r {{ target-dir }}/bevy_web/web-release/{{ bin-name }}/* target/out/{{ web-target }}
+
+# Validates that the git working directory is clean and that the itch.io page is valid
+validate-all:
+    just validate-git
+    just validate-itch
+
+# Validates that the git working directory has no uncommited changes
+validate-git:
+    @if [[ -n $(git status --porcelain) ]]; then \
+        echo "{{ style("error") }}error{{ NORMAL }}{{ BOLD }}: Git working directory must be clean!{{ NORMAL }}"; \
+        exit 1; \
+    fi
+
+# Validates that the itch.io page is valid
+validate-itch:
+    @if ! {{ butler }} status "{{ itch-page }}" > /dev/null; then \
+        echo "{{ style("error") }}error{{ NORMAL }}{{ BOLD }}: Itch page '{{ itch-page }}' is invalid or no access!"; \
+        exit 1; \
+    fi
+{% endraw -%}

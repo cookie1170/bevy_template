@@ -1,0 +1,17 @@
+[template]
+ignore = ["LICENSE", "README.md"]
+
+[placeholders]
+features = { prompt = "Which bevy features would you like?", choices = [
+  "2D",
+  "3D",
+  "None",
+  "Default"
+] }
+justfile = { prompt = "Would you like a justfile for publishing to itch.io?", default = true, type = "bool" }
+
+[conditional.justfile]
+placeholders.itch = { prompt = "What's your itch.io page?", default = "PLACEHOLDER" }
+
+[conditional.'!justfile']
+ignore = ["justfile"]

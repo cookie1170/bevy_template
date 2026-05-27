@@ -1,27 +1,23 @@
 [workspace.dependencies]
+rand = "0.9"
 {% case features -%}
-  {%- when "3D" -%}
-bevy = {
-  version = "0.18.1",
-  default-features = false,
-  features = ["3d"],
-}
-  {%- when "2D" -%}
-bevy = {
-  version = "0.18.1",
-  default-features = false,
-  features = ["2d"],
-}
+  {%- when "3D" %}
+[workspace.dependencies.bevy]
+version = "0.18.1"
+default-features = false
+features = ["3d"]
+  {%- when "2D" %}
+[workspace.dependencies.bevy]
+version = "0.18.1"
+default-features = false
+features = ["2d"]
   {%- when "Default" -%}
 bevy = "0.18.1"
-  {%- when "None" -%}
-bevy = {
-  version = "0.18.1",
-  default-features = false,
-  features = [],
-}
+  {%- when "None" %}
+version = "0.18.1"
+default-features = false
+features = []
 {%- endcase %}
-rand = "0.9"
 
 [package]
 name = "{{ project-name }}"
@@ -32,18 +28,23 @@ publish = false
 [dependencies]
 bevy.workspace = true
 rand.workspace = true
+
+[dependencies.tracing]
+version = "0.1"
 # compile out low-severity logs to improve performance
-tracing = {
-  version = "0.1",
-  features = [
-    "max_level_debug",
-    "release_max_level_warn",
-  ],
-}
+features = [
+  "max_level_debug",
+  "release_max_level_warn",
+]
 
 [features]
+{%- if web %}
 # default to a native dev build
 default = ["dev_native"]
+{%- else %}
+# default to a dev build
+default = ["dev"]
+{%- endif %}
 dev = [
   "bevy/bevy_dev_tools",
   "bevy/bevy_ui_debug",
@@ -52,7 +53,14 @@ dev = [
   "bevy/dynamic_linking",
   # improve error messages coming from Bevy
   "bevy/track_location",
+  {%- unless web %}
+  # enable embedded asset hot reloading for native dev builds
+  "bevy/embedded_watcher",
+  # enable asset hot reloading for native dev builds
+  "bevy/file_watcher",
+  {%- endunless %}
 ]
+{%- if web %}
 dev_native = [
   # enable embedded asset hot reloading for native dev builds
   "bevy/embedded_watcher",
@@ -60,6 +68,7 @@ dev_native = [
   "bevy/file_watcher",
   "dev",
 ]
+{%- endif %}
 # hotpatching via the dioxus cli:
 # `dx serve --hot-patch --features hotpatching`
 hotpatching = ["bevy/hotpatching"]
@@ -76,6 +85,7 @@ opt-level = 3
 [profile.dev.package.wgpu-types]
 debug-assertions = false
 
+{%- if web %}
 # this profile will be used by `bevy run web` automatically
 [profile.web-release]
 # default to release profile values
@@ -89,6 +99,7 @@ strip = "debuginfo"
 # required for wasm to work
 [target.wasm32-unknown-unknown.dependencies]
 getrandom = { version = "0.3", features = ["wasm_js"] }
+{%- endif %}
 
 [lints.clippy]
 # bevy supplies arguments to systems via dependency injection, so it's natural for systems to
@@ -105,14 +116,15 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(bevy_lint)"] }
 # disable dev features for release builds
 default-features = false
 
+{%- if web %}
 [package.metadata.bevy_cli.web]
 # disable native features for web builds
 default-features = false
 
 [package.metadata.bevy_cli.web.dev]
 features = ["dev"]
+{%- endif %}
 
 [package.metadata.bevy_lint]
 panicking_methods = "deny"
 pedantic = "warn"
-

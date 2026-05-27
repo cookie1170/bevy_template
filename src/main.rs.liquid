@@ -6,7 +6,6 @@
 pub(crate) mod prelude;
 
 use crate::prelude::*;
-use bevy::asset::AssetMetaCheck;
 use bevy::ecs::error::warn;
 use bevy::log::{self, Level, LogPlugin};
 
@@ -20,16 +19,11 @@ fn main() -> AppExit {
     {%- if nearest_filter %}
         .set(ImagePlugin::default_nearest())
     {%- endif %}
-        .set(LogPlugin {
-            // set the default log level to be `debug` for this crate
-            filter: format!("{{ project-name }}=debug,{}", log::DEFAULT_FILTER),
-            level: Level::INFO,
-            ..default()
-        })
+    {%- if web %}
         .set(AssetPlugin {
             // wasm builds will check for meta files (that don't exist) if this isn't set
             // this causes errors and even panics on web build on itch
-            meta_check: AssetMetaCheck::Never,
+            meta_check: bevy::asset::AssetMetaCheck::Never,
             ..default()
         })
         .set(WindowPlugin {
@@ -38,6 +32,15 @@ fn main() -> AppExit {
                 ..default()
             }
             .into(),
+            ..default()
+        })
+    {%- endif %}
+        .set(LogPlugin {
+            #[cfg(feature = "dev")]
+            // set the default log level to be `debug` for this crate
+            filter: format!("{{ project-name }}=debug,{}", log::DEFAULT_FILTER),
+            #[cfg(feature = "dev")]
+            level: Level::INFO,
             ..default()
         });
 

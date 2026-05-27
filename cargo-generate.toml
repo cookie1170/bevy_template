@@ -8,13 +8,14 @@ features = { prompt = "Which bevy features would you like?", choices = [
   "None",
   "Default"
 ] }
-justfile = { prompt = "Would you like a justfile for publishing to itch.io?", default = true, type = "bool" }
+web = { prompt = "Would you like to export your game to the web?", type = "bool", default = true }
+justfile = { prompt = "Would you like a justfile?", type = "bool", default = true }
 
-[conditional.'features == "2D"']
-placeholders.nearest_filter = { prompt = "Would you like to use the 'nearest' filter? (for pixel art)", type = "bool", default = false }
+[conditional.'justfile'.placeholders]
+itch = { prompt = "Would you like to publish to itch.io?", type = "bool", default = false }
 
-[conditional.justfile]
-placeholders.itch = { prompt = "What's your itch.io page?", default = "PLACEHOLDER" }
+[conditional.'itch'.placeholders]
+itch-page = { prompt = "What's your itch.io page? (user/game)" }
 
-[conditional.'!justfile']
-ignore = ["justfile"]
+[conditional.'features == "2D"'.placeholders]
+nearest_filter = { prompt = "Would you like to use the 'nearest' filter? (for pixel art)", type = "bool", default = false }

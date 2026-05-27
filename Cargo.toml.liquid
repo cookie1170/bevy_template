@@ -41,6 +41,9 @@ dev_native = [
   "bevy/file_watcher",
   "dev",
 ]
+# hotpatching via the dioxus cli:
+# `dx serve --hot-patch --features hotpatching`
+hotpatching = ["bevy/hotpatching"]
 
 # enable a small amount of optimization in the dev profile
 [profile.dev]

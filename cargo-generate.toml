@@ -1,5 +1,5 @@
 [template]
-ignore = ["LICENSE", "README.md"]
+ignore = ["LICENSE", "README.md", ".jj"]
 
 [placeholders]
 features = { prompt = "Which bevy features would you like?", choices = [

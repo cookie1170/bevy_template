@@ -1,3 +1,28 @@
+[workspace.dependencies]
+{% case features -%}
+  {%- when "3D" -%}
+bevy = {
+  version = "0.18.1",
+  default-features = false,
+  features = ["3d"],
+}
+  {%- when "2D" -%}
+bevy = {
+  version = "0.18.1",
+  default-features = false,
+  features = ["2d"],
+}
+  {%- when "Default" -%}
+bevy = "0.18.1"
+  {%- when "None" -%}
+bevy = {
+  version = "0.18.1",
+  default-features = false,
+  features = [],
+}
+{%- endcase %}
+rand = "0.9"
+
 [package]
 name = "{{ project-name }}"
 version = "0.1.0"
@@ -5,22 +30,16 @@ edition = "2024"
 publish = false
 
 [dependencies]
-{% case features -%}
-  {%- when "3D" -%}
-    bevy = { version = "0.18.1", default-features = false, features = ["3d"] }
-  {%- when "2D" -%}
-    bevy = { version = "0.18.1", default-features = false, features = ["2d"] }
-  {%- when "Default" -%}
-    bevy = "0.18.1"
-  {%- when "None" -%}
-    bevy = { version = "0.18.1", default-features = false, features = []}
-{%- endcase %}
-rand = "0.9"
+bevy.workspace = true
+rand.workspace = true
 # compile out low-severity logs to improve performance
-tracing = { version = "0.1", features = [
-  "max_level_debug",
-  "release_max_level_warn",
-] }
+tracing = {
+  version = "0.1",
+  features = [
+    "max_level_debug",
+    "release_max_level_warn",
+  ],
+}
 
 [features]
 # default to a native dev build
@@ -72,8 +91,6 @@ strip = "debuginfo"
 getrandom = { version = "0.3", features = ["wasm_js"] }
 
 [lints.clippy]
-# make sure macros use their standard braces, such as `[]` for `bevy_ecs::children!`
-nonstandard_macro_braces = "warn"
 # bevy supplies arguments to systems via dependency injection, so it's natural for systems to
 # request more than 7 arguments, which would undesirably trigger this lint
 too_many_arguments = "allow"

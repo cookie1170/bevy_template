@@ -7,9 +7,13 @@ pub(crate) mod prelude;
 
 use crate::prelude::*;
 use bevy::asset::AssetMetaCheck;
+use bevy::ecs::error::warn;
 
 fn main() -> AppExit {
     let mut app = App::new();
+
+    // don't panic when systems return an error!
+    app.set_error_handler(warn);
 
     app.add_plugins(
         DefaultPlugins

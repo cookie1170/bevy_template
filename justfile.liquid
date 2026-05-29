@@ -32,9 +32,9 @@ run *args:
 
 # build and publish the project to itch.io
 {%- if web %}
-[arg("target", help="a rustc target triple, `web`, or `all` (web, linux, windows)")]
+[arg("target", long="target", help="a rustc target triple, `web`, or `all` (web, linux, windows)")]
 {%- else %}
-[arg("target", help="a rustc target triple, or `all` (linux and windows)")]
+[arg("target", long="target", help="a rustc target triple, or `all` (linux and windows)")]
 {%- endif %}
 [arg("args", help="args to pass to the bevy cli")]
 [arg("publish", long="dry-run", value="false", help="don't publish anything")]
@@ -81,9 +81,9 @@ publish target="all" channel="" build="true" validate="true" publish="true" *arg
 
 # build the project for release
 {%- if web %}
-[arg("target", help="a rustc target triple, `web`, or `all` (web, linux, windows)")]
+[arg("target", long="target", help="a rustc target triple, `web`, or `all` (web, linux, windows)")]
 {%- else %}
-[arg("target", help="a rustc target triple, or `all` (linux and windows)")]
+[arg("target", long="target", help="a rustc target triple, or `all` (linux and windows)")]
 {%- endif %}
 [arg("args", help="args to pass to the bevy cli")]
 [script]

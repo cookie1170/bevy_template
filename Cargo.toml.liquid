@@ -101,16 +101,19 @@ strip = "debuginfo"
 getrandom = { version = "0.3", features = ["wasm_js"] }
 {%- endif %}
 
-[lints.clippy]
+[workspace.lints.clippy]
 # bevy supplies arguments to systems via dependency injection, so it's natural for systems to
 # request more than 7 arguments, which would undesirably trigger this lint
 too_many_arguments = "allow"
 # queries may access many components, which would undesirably trigger this lint
 type_complexity = "allow"
 
-[lints.rust]
+[workspace.lints.rust]
 # mark `bevy_lint` as a valid `cfg`, as it is set when the bevy linter runs
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(bevy_lint)"] }
+
+[lints]
+workspace = true
 
 [package.metadata.bevy_cli.release]
 # disable dev features for release builds

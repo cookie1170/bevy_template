@@ -5,9 +5,10 @@ ignore = ["LICENSE", "README.md", ".jj"]
 features = { prompt = "Which bevy features would you like?", choices = [
   "2D",
   "3D",
-  "None",
-  "Default"
-] }
+  "UI",
+  "Audio",
+], type = "array" }
+nearest_filter = { prompt = "Would you like to use the 'nearest' filter? (for pixel art)", type = "bool" }
 web = { prompt = "Would you like to export your game to the web?", type = "bool", default = true }
 justfile = { prompt = "Would you like a justfile?", type = "bool", default = true }
 
@@ -16,6 +17,3 @@ itch = { prompt = "Would you like to publish to itch.io?", type = "bool", defaul
 
 [conditional.'itch'.placeholders]
 itch-page = { prompt = "What's your itch.io page? (user/game)" }
-
-[conditional.'features == "2D"'.placeholders]
-nearest_filter = { prompt = "Would you like to use the 'nearest' filter? (for pixel art)", type = "bool", default = false }

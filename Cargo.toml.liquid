@@ -1,23 +1,12 @@
 [workspace.dependencies]
 rand = "0.9"
-{% case features -%}
-  {%- when "3D" %}
-[workspace.dependencies.bevy]
-version = "0.18.1"
-default-features = false
-features = ["3d"]
-  {%- when "2D" %}
-[workspace.dependencies.bevy]
-version = "0.18.1"
-default-features = false
-features = ["2d"]
-  {%- when "Default" -%}
-bevy = "0.18.1"
-  {%- when "None" %}
-version = "0.18.1"
-default-features = false
-features = []
-{%- endcase %}
+bevy = {
+  version = "0.19",
+  default-features = false,
+  features = [
+{% for feature in features %}    "{{ feature | downcase }}",
+{% endfor %}  ],
+}
 
 [package]
 name = "{{ project-name }}"

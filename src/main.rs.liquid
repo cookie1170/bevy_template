@@ -38,7 +38,7 @@ fn main() -> AppExit {
         .set(LogPlugin {
             #[cfg(feature = "dev")]
             // set the default log level to be `debug` for this crate
-            filter: format!("{{ project-name }}=debug,{}", log::DEFAULT_FILTER),
+            filter: format!("{}=debug,{}", env!("CARGO_PKG_NAME"), log::DEFAULT_FILTER),
             #[cfg(feature = "dev")]
             level: Level::INFO,
             ..default()

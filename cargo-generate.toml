@@ -15,5 +15,8 @@ justfile = { prompt = "Would you like a justfile?", type = "bool", default = tru
 [conditional.'justfile'.placeholders]
 itch = { prompt = "Would you like to publish to itch.io?", type = "bool", default = false }
 
+[conditional.'!justfile']
+ignore = ["justfile"]
+
 [conditional.'itch'.placeholders]
 itch-page = { prompt = "What's your itch.io page? (user/game)" }

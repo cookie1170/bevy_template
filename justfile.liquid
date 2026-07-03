@@ -108,7 +108,7 @@ build target="all" *args:
         rm -rf 'target/out/{{ web-target }}'
         mkdir -p 'target/out/{{ web-target }}'
 
-        bevy build {{ args }} --release web --bundle
+        bevy build {{ args }} --release --no-default-features web --bundle
         cp -r '{{ target-dir }}/bevy_web/web-release/{{ bin-name }}/'* 'target/out/{{ web-target }}'
     {%- endraw %}
 {%- endif %}
@@ -120,7 +120,7 @@ build target="all" *args:
         mkdir -p 'target/out/{{ target }}'
 
         ext='{{ if target =~ ".*windows.*" { ".exe" } else { "" } }}'
-        bevy build {{ args }} --release --target '{{ target }}'
+        bevy build {{ args }} --release --no-default-features --target '{{ target }}'
         mv '{{ target-dir }}/{{ target }}/release/{{ bin-name }}'"$ext" 'target/out/{{ target }}'
         cp -r 'assets' 'target/out/{{ target }}'
     fi

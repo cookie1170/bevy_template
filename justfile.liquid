@@ -1,5 +1,5 @@
 {%- if itch  -%}
-itch-page := 'null'
+itch-page := '{{ itch-page }}'
 {% endif %}
 
 {%- if web -%}
@@ -23,10 +23,16 @@ crate-version := shell("cargo metadata --format-version 1 --no-deps | jq -r '.pa
 {%- endif %}
 
 # run the project
-[arg("args", help="args to pass to the bevy cli")]
-run *args:
+[arg("args", help="args to pass to the cli")]
+[arg("hotpatch", long="hot", value="true", help="use hotpatching via `dx`")]
+[script]
+run hotpatch="false" *args:
 {%- raw %}
-    bevy run {{ args }}
+    if {{ hotpatch }}; then
+        BEVY_ASSET_ROOT='.' dx serve --hot-patch --features hotpatching {{ args }}
+    else
+        bevy run {{ args }}
+    fi
 {%- endraw -%}
 {% if itch %}
 

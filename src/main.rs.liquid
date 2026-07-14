@@ -6,43 +6,46 @@
 pub(crate) mod prelude;
 
 use crate::prelude::*;
-use bevy::ecs::error::warn;
 use bevy::log::{self, Level, LogPlugin};
 
 fn main() -> AppExit {
     let mut app = App::new();
 
     // don't panic when systems return an error!
-    app.set_error_handler(warn);
+    app.set_error_handler(bevy::ecs::error::warn);
 
-    let default_plugins = DefaultPlugins
+    let mut default_plugins = DefaultPlugins.build();
+
+    default_plugins = default_plugins.set(LogPlugin {
+        #[cfg(feature = "dev")]
+        // set the default log level to be `debug` for this crate
+        filter: format!("{}=debug,{}", env!("CARGO_PKG_NAME"), log::DEFAULT_FILTER),
+        #[cfg(feature = "dev")]
+        level: Level::INFO,
+        ..default()
+    });
     {%- if nearest_filter %}
-        .set(ImagePlugin::default_nearest())
+
+    default_plugins = default_plugins.set(ImagePlugin::default_nearest());
     {%- endif %}
     {%- if web %}
-        .set(AssetPlugin {
-            // wasm builds will check for meta files (that don't exist) if this isn't set
-            // this causes errors and even panics on web build on itch
-            meta_check: bevy::asset::AssetMetaCheck::Never,
+
+    default_plugins = default_plugins.set(AssetPlugin {
+        // wasm builds will check for meta files (that don't exist) if this isn't set
+        // this causes errors and even panics on web build on itch
+        meta_check: bevy::asset::AssetMetaCheck::Never,
+        ..default()
+    });
+
+    default_plugins = default_plugins.set(WindowPlugin {
+        primary_window: Window {
+            fit_canvas_to_parent: true,
             ..default()
-        })
-        .set(WindowPlugin {
-            primary_window: Window {
-                fit_canvas_to_parent: true,
-                ..default()
-            }
-            .into(),
-            ..default()
-        })
+        }
+        .into(),
+        ..default()
+    });
     {%- endif %}
-        .set(LogPlugin {
-            #[cfg(feature = "dev")]
-            // set the default log level to be `debug` for this crate
-            filter: format!("{}=debug,{}", env!("CARGO_PKG_NAME"), log::DEFAULT_FILTER),
-            #[cfg(feature = "dev")]
-            level: Level::INFO,
-            ..default()
-        });
 
     app.add_plugins(default_plugins);
 

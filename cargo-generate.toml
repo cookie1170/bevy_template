@@ -8,15 +8,16 @@ features = { prompt = "Which bevy features would you like?", choices = [
   "UI",
   "Audio",
 ], type = "array" }
+crates = { prompt = "Which utility crates would you like?", choices = ["avian", "enhanced_input", "seedling", "inspector_egui"], type = "array" }
 nearest_filter = { prompt = "Would you like to use the 'nearest' filter? (for pixel art)", type = "bool" }
 web = { prompt = "Would you like to export your game to the web?", type = "bool", default = true }
 justfile = { prompt = "Would you like a justfile?", type = "bool", default = true }
 
-[conditional.'justfile'.placeholders]
+[conditional."justfile".placeholders]
 itch = { prompt = "Would you like to publish to itch.io?", type = "bool", default = false }
 
-[conditional.'!justfile']
+[conditional."!justfile"]
 ignore = ["justfile"]
 
-[conditional.'itch'.placeholders]
+[conditional."itch".placeholders]
 itch-page = { prompt = "What's your itch.io page? (user/game)" }

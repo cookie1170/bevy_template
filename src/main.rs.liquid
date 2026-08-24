@@ -45,9 +45,28 @@ fn main() -> AppExit {
     {%- endif %}
 
     app.add_plugins(default_plugins);
+    {%- if crates contains "avian" %}
+    app.add_plugins(PhysicsPlugins::default());
+    {%- endif %}
+    {%- if crates contains "enhanced_input" %}
+    app.add_plugins(EnhancedInputPlugin);
+    {%- endif %}
+    {%- if crates contains "seedling" %}
+    app.add_plugins(SeedlingPlugins);
+    {%- endif %}
+    {%- if crates contains "inspector_egui" %}
+
+    #[cfg(feature = "dev")]
+    app.add_plugins((
+        bevy_inspector_egui::bevy_egui::EguiPlugin::default(),
+        bevy_inspector_egui::quick::WorldInspectorPlugin::new()
+            .run_if(input_toggle_active(false, KeyCode::Backquote)),
+    ));
+    {%- endif %}
 
     app.run()
 }
 
 use crate::prelude::*;
+use bevy::input::common_conditions::input_toggle_active;
 use bevy::log::{self, Level, LogPlugin};

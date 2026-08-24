@@ -1,12 +1,38 @@
 [workspace.dependencies]
-rand = "0.9"
 bevy = {
   version = "0.19",
   default-features = false,
   features = [
-{% for feature in features %}    "{{ feature | downcase }}",
-{% endfor %}  ],
+    {%- for feature in features %}
+    "{{ feature | downcase }}",
+    {%- endfor %}
+  ],
 }
+rand = "0.10"
+tiny_bail = "0.7.0"
+{%- if crates contains "avian" %}
+avian = { package = {% if features contains "2D" -%} "avian2d" {%- else -%} "avian3d" {%- endif %}, version = "0.7" }
+{%- endif %}
+{%- if crates contains "enhanced_input" %}
+bevy_enhanced_input = "0.26"
+{%- endif %}
+{%- if crates contains "seedling" %}
+bevy_seedling = "0.8"
+{%- endif %}
+{%- if crates contains "inspector_egui" %}
+bevy_egui = "0.42"
+bevy_inspector_egui = {
+  version = "0.37",
+  default-features = false,
+  optional = true,
+  features = [{% if features contains "2D" %}
+    "2d", {%- endif %}{% if features contains "3D" %}
+    "3d", {%- endif %}
+    "bevy_gizmos",
+    "egui_clipboard",
+  ],
+}
+{%- endif %}
 
 [package]
 name = "{{ project-name }}"
@@ -17,14 +43,28 @@ publish = false
 [dependencies]
 bevy.workspace = true
 rand.workspace = true
-
-[dependencies.tracing]
-version = "0.1"
-# compile out low-severity logs to improve performance
-features = [
-  "max_level_debug",
-  "release_max_level_warn",
-]
+tiny_bail.workspace = true
+{%- if crates contains "avian" %}
+avian.workspace = true
+{%- endif %}
+{%- if crates contains "enhanced_input" %}
+bevy_enhanced_input.workspace = true
+{%- endif %}
+{%- if crates contains "seedling" %}
+bevy_seedling.workspace = true
+{%- endif %}
+{%- if crates contains "inspector_egui" %}
+bevy_egui.workspace = true
+bevy_inspector_egui.workspace = true
+{%- endif %}
+tracing = {
+  version = "0.1",
+  # compile out low-severity logs to improve performance
+  features = [
+    "max_level_debug",
+    "release_max_level_warn",
+  ]
+}
 
 [features]
 {%- if web %}
@@ -48,6 +88,12 @@ dev = [
   # enable asset hot reloading for native dev builds
   "bevy/file_watcher",
   {%- endunless %}
+  {%- if crates contains "seedling" %}
+  "bevy_seedling/dev",
+  {%- endif %}
+  {%- if crates contains "inspector_egui" %}
+  "bevy_inspector_egui",
+  {%- endif %}
 ]
 {%- if web %}
 dev_native = [

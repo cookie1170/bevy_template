@@ -20,11 +20,9 @@ bevy_enhanced_input = "0.26"
 bevy_seedling = "0.8"
 {%- endif %}
 {%- if crates contains "inspector_egui" %}
-bevy_egui = "0.42"
-bevy_inspector_egui = {
+bevy-inspector-egui = {
   version = "0.37",
   default-features = false,
-  optional = true,
   features = [{% if features contains "2D" %}
     "2d", {%- endif %}{% if features contains "3D" %}
     "3d", {%- endif %}
@@ -54,8 +52,7 @@ bevy_enhanced_input.workspace = true
 bevy_seedling.workspace = true
 {%- endif %}
 {%- if crates contains "inspector_egui" %}
-bevy_egui.workspace = true
-bevy_inspector_egui.workspace = true
+bevy-inspector-egui = { workspace = true, optional = true }
 {%- endif %}
 tracing = {
   version = "0.1",
@@ -92,7 +89,7 @@ dev = [
   "bevy_seedling/dev",
   {%- endif %}
   {%- if crates contains "inspector_egui" %}
-  "bevy_inspector_egui",
+  "bevy-inspector-egui",
   {%- endif %}
 ]
 {%- if web %}

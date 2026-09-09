@@ -3,8 +3,6 @@
 // disable console on windows for non-dev builds
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 
-pub(crate) mod prelude;
-
 fn main() -> AppExit {
     let mut app = App::new();
 
@@ -16,7 +14,7 @@ fn main() -> AppExit {
     default_plugins = default_plugins.set(LogPlugin {
         #[cfg(feature = "dev")]
         // set the default log level to be `debug` for this crate
-        filter: format!("{}=debug,{}", env!("CARGO_PKG_NAME"), log::DEFAULT_FILTER),
+        filter: format!("{}=debug,{}", module_path!(), log::DEFAULT_FILTER),
         #[cfg(feature = "dev")]
         level: Level::INFO,
         ..default()
@@ -37,6 +35,7 @@ fn main() -> AppExit {
     default_plugins = default_plugins.set(WindowPlugin {
         primary_window: Window {
             fit_canvas_to_parent: true,
+            mode: bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Current),
             ..default()
         }
         .into(),
@@ -66,6 +65,8 @@ fn main() -> AppExit {
 
     app.run()
 }
+
+pub(crate) mod prelude;
 
 use crate::prelude::*;
 use bevy::input::common_conditions::input_toggle_active;

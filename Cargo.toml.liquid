@@ -1,6 +1,6 @@
 [workspace.dependencies]
 bevy = {
-  version = "0.19",
+  version = "0.20",
   default-features = false,
   features = [
     {%- for feature in features %}
@@ -11,17 +11,17 @@ bevy = {
 rand = "0.10"
 tiny_bail = "0.7.0"
 {%- if crates contains "avian" %}
-avian = { package = {% if features contains "2D" -%} "avian2d" {%- else -%} "avian3d" {%- endif %}, version = "0.7" }
+avian = { package = {% if features contains "2D" -%} "avian2d" {%- else -%} "avian3d" {%- endif %}, version = "0.8" }
 {%- endif %}
 {%- if crates contains "enhanced_input" %}
-bevy_enhanced_input = "0.26"
+bevy_enhanced_input = "0.27"
 {%- endif %}
 {%- if crates contains "seedling" %}
 bevy_seedling = "0.8"
 {%- endif %}
 {%- if crates contains "inspector_egui" %}
 bevy-inspector-egui = {
-  version = "0.37",
+  version = "0.38",
   default-features = false,
   features = [{% if features contains "2D" %}
     "2d", {%- endif %}{% if features contains "3D" %}

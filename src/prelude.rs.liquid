@@ -2,18 +2,26 @@
 #![allow(unused_imports)]
 
 pub use bevy::{
-    anti_alias::fxaa::Fxaa,
+    {%- if features contains "3D" %}
+    anti_alias::{fxaa::Fxaa, smaa::Smaa, taa::TemporalAntiAliasing},
+    {%- endif %}
     app::PluginGroupBuilder,
     core_pipeline::prepass::DepthPrepass,
     image::{ImageFilterMode, ImageSamplerDescriptor},
     input::common_conditions::*,
+    {%- if features contains "3D" %}
     light::{Atmosphere, atmosphere::ScatteringMedium},
     pbr::{AtmosphereSettings, ExtendedMaterial, MaterialExtension},
+    {%- endif %}
+    post_process::bloom::Bloom,
     prelude::*,
     render::render_resource::AsBindGroup,
     shader::ShaderRef,
+    tasks::{AsyncComputeTaskPool, ComputeTaskPool, IoTaskPool, block_on},
 };
+pub use std::{collections::HashMap, marker::PhantomData, time::Duration};
 pub use tiny_bail::prelude::*;
+
 {%- if crates contains "avian" %}
 pub use avian::prelude::*;
 {%- endif %}

@@ -9,6 +9,12 @@ fn main() -> AppExit {
     // don't panic when systems return an error!
     app.set_error_handler(bevy::ecs::error::warn);
 
+    // ambiguous systems are bad!
+    app.configure_schedules(ScheduleBuildSettings {
+        ambiguity_detection: LogLevel::Warn,
+        ..default()
+    });
+
     let mut default_plugins = DefaultPlugins.build();
 
     default_plugins = default_plugins.set(LogPlugin {
@@ -36,6 +42,12 @@ fn main() -> AppExit {
         primary_window: Window {
             fit_canvas_to_parent: true,
             mode: bevy::window::WindowMode::BorderlessFullscreen(MonitorSelection::Current),
+            // add `bevy-dev-` prefix to the window class to use development
+            // window rules such as moving the game window to a second monitor
+            name: cfg_select! {
+                feature = "dev" => Some(format!("bevy-dev-{}", env!("CARGO_PKG_NAME"))),
+                _ => Some(env!("CARGO_PKG_NAME").into()),
+            },
             ..default()
         }
         .into(),
@@ -69,5 +81,4 @@ fn main() -> AppExit {
 pub(crate) mod prelude;
 
 use crate::prelude::*;
-use bevy::input::common_conditions::input_toggle_active;
 use bevy::log::{self, Level, LogPlugin};
